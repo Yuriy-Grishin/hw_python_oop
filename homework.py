@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from typing import Dict, List, Any
+from typing import Dict, List
 
 
 @dataclass
@@ -59,16 +59,21 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
+    burn_cal_coeff_1: float = 18
+    burn_cal_coeff_2: float = 20
+
     def get_spent_calories(self) -> float:
-        coeff_cal_run_1: float = 18
-        coeff_cal_run_2: float = 20
-        return ((coeff_cal_run_1 * self.get_mean_speed()
-                - coeff_cal_run_2) * self.weight / self.M_IN_KM
+        return ((self.burn_cal_coeff_1 * self.get_mean_speed()
+                - self.burn_cal_coeff_2) * self.weight / self.M_IN_KM
                 * self.duration * self.MIN_IN_H)
 
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
+    burn_cal_coeff_3: float = 0.035
+    burn_cal_coeff_4: float = 0.029
+    burn_cal_coeff_5: float = 2
+
     def __init__(self,
                  action: int,
                  duration: float,
@@ -79,17 +84,17 @@ class SportsWalking(Training):
         self.height = height
 
     def get_spent_calories(self) -> float:
-        coeff_cal_walk_1: float = 0.035
-        coeff_cal_walk_2: float = 0.029
-        coeff_cal_walk_3: float = 2
-        return (coeff_cal_walk_1 * self.weight + (self.get_mean_speed()
-                ** coeff_cal_walk_3 // self.height) * coeff_cal_walk_2
+        return (self.burn_cal_coeff_3 * self.weight + (self.get_mean_speed()
+                ** self.burn_cal_coeff_5 // self.height)
+                * self.burn_cal_coeff_4
                 * self.weight) * (self.duration * self.MIN_IN_H)
 
 
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP: float = 1.38
+    burn_cal_coeff_6: float = 1.1
+    burn_cal_coeff_7: float = 2
 
     def __init__(self,
                  action: int,
@@ -106,15 +111,13 @@ class Swimming(Training):
         return (self.length * self.count / self.M_IN_KM / self.duration)
 
     def get_spent_calories(self) -> float:
-        coeff_cal_swim_1: float = 1.1
-        coeff_cal_swim_2: float = 2
         return ((self.get_mean_speed()
-                + coeff_cal_swim_1) * coeff_cal_swim_2 * self.weight)
+                + self.burn_cal_coeff_6) * self.burn_cal_coeff_7 * self.weight)
 
 
 def read_package(workout_type: str, data: List[int]) -> Training:
     """Прочитать данные полученные от датчиков."""
-    training_dict: Dict[str, Any] = {
+    training_dict: Dict[str, type[Training]] = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
